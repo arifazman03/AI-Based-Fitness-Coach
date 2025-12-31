@@ -4,6 +4,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.forms import RegisterForm, LoginForm, BMIForm, EditProfileForm
 from app.models import User, BMIRecord, PerformanceAnalysis, WorkoutSchedule
+from dotenv import load_dotenv
 from app import db
 import cv2
 import mediapipe as mp
@@ -16,6 +17,8 @@ import secrets
 import os
 from PIL import Image
 import random
+import requests
+
 
 
 # Initialize Blueprint
@@ -274,6 +277,9 @@ def save_picture(form_picture):
     return picture_fn
 # ----------------------------------------------------------------------
 
+# Load the variables from .env file
+load_dotenv()
+print(f"KEY LOADED: {os.getenv('GEMINI_API_KEY')[:10]}...") # Prints just the start of the key for safety
 
 # ----------------------------------------------------------------------
 ## Flask Routes
@@ -834,6 +840,36 @@ def check_today_schedule():
 def chatbot():
     """Renders the AI Chatbot page."""
     return render_template('chatbot.html')
+
+@main.route('/api/chat', methods=['POST'])
+def chat():
+    try:
+        data = request.json
+        user_contents = data.get('contents', [])
+        api_key = os.getenv("GEMINI_API_KEY")
+        
+        # Use the stable 1.5 flash URL
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
+        
+        headers = {'Content-Type': 'application/json'}
+        payload = {"contents": user_contents}
+
+        response = requests.post(url, headers=headers, json=payload)
+        
+        # Check if we hit a rate limit
+        if response.status_code == 429:
+            return jsonify({
+                "error": "Message limit reached. Please wait a minute before trying again."
+            }), 429
+        
+        # Check for other errors
+        if response.status_code != 200:
+            return jsonify({"error": "The AI is currently unavailable."}), response.status_code
+            
+        return jsonify(response.json())
+
+    except Exception as e:
+        return jsonify({"error": "Server error occurred."}), 500
 
 @main.route('/logout-confirmation')
 def logout_confirmation():

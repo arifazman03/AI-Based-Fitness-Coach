@@ -1,7 +1,14 @@
-venv/
+# Environments
 .venv/
 venv/
-.venv/
-instance/
+env/
+
+# Python cache
 __pycache__/
 *.pyc
+
+# Secrets
+.env
+
+# Flask instance
+instance/

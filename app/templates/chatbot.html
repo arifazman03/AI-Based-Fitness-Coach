@@ -393,219 +393,155 @@
     </div>
 
     <script>
-        const API_KEY = "AIzaSyCC5Zr8hHf2tUVClC4zyhYOlOhjqwNLUnM"; 
-        const MODEL = 'gemini-2.5-flash'; 
+    // 1. Variables and Selectors
+    const chatHistoryElement = document.getElementById('chatHistory');
+    const chatInput = document.getElementById('chatInput');
+    const initialGreeting = document.getElementById('initialGreeting');
+
+    let chatHistory = [];
+    let isSending = false;
+
+    /**
+     * Restored: handle the sidebar toggle logic
+     */
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const main = document.getElementById('main');
+        const icon = document.getElementById('toggle-icon');
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        main.classList.toggle('full');
+        icon.innerHTML = isCollapsed ? '&gt;' : '&lt;';
+    }
+    // Make it accessible to the HTML button
+    window.toggleSidebar = toggleSidebar;
+
+    /**
+     * Restored: handle the Enter key press
+     */
+    function handleKeyDown(event) {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault(); 
+            sendMessage();
+        }
+    }
+    window.handleKeyDown = handleKeyDown;
+
+    /**
+     * Restored: Displays messages in the chat UI
+     */
+    function displayMessage(text, sender, sources = []) {
+        if (initialGreeting) initialGreeting.style.display = 'none';
+
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
         
-        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`; 
-        
-        const SYSTEM_PROMPT = "You are an expert, supportive AI Fitness Coach. Your goal is to provide accurate, safe, and motivating advice on fitness, workouts, nutrition, and exercise form. Always use Google Search for current, factual, or specific requests. Keep responses encouraging and easy to understand.";
+        // Simple Markdown-ish formatting
+        let htmlText = text.replace(/\n/g, '<br>'); 
+        htmlText = htmlText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
+        htmlText = htmlText.replace(/\*(.*?)\*/g, '<em>$1</em>'); 
+        contentDiv.innerHTML = htmlText;
 
-        const chatHistoryElement = document.getElementById('chatHistory');
-        const chatInput = document.getElementById('chatInput');
-        const initialGreeting = document.getElementById('initialGreeting');
-
-        let chatHistory = [];
-        let isSending = false; 
-
-        /**
-         * handle the sidebar toggle logic.
-         */
-        function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            const main = document.getElementById('main');
-            const icon = document.getElementById('toggle-icon');
-            const isCollapsed = sidebar.classList.toggle('collapsed');
-            main.classList.toggle('full');
-            icon.innerHTML = isCollapsed ? '&gt;' : '&lt;';
-        }
-        document.getElementById('toggle-icon').innerHTML = '&lt;';
-        window.toggleSidebar = toggleSidebar; 
-
-        /**
-         * utility for making API calls
-         */
-        async function fetchWithBackoff(url, options, maxRetries = 5, delay = 1000) {
-            for (let i = 0; i < maxRetries; i++) {
-                try {
-                    const response = await fetch(url, options);
-                    if (response.ok) {
-                        return response;
-                    }
-                    if (response.status === 429 || response.status >= 500) {
-                        console.warn(`Attempt ${i + 1} failed with status ${response.status}. Retrying in ${delay}ms...`);
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2; 
-                        continue;
-                    }
-                    const errorText = await response.text();
-                    throw new Error(`API failed with status ${response.status}: ${errorText}`);
-                } catch (error) {
-                    if (i === maxRetries - 1) {
-                        throw error;
-                    }
-                    console.warn(`Attempt ${i + 1} failed due to error. Retrying in ${delay}ms...`, error);
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2; 
-                }
-            }
-            throw new Error("Failed to fetch after multiple retries.");
+        // Handle Citations/Sources
+        if (sources.length > 0) {
+            const citationContainer = document.createElement('div');
+            citationContainer.className = 'citation-container';
+            citationContainer.innerHTML = 'Sources: ';
+            sources.forEach((source, index) => {
+                const link = document.createElement('a');
+                link.href = source.uri;
+                link.target = '_blank';
+                link.textContent = source.title || "Link";
+                citationContainer.appendChild(link);
+                if (index < sources.length - 1) citationContainer.appendChild(document.createTextNode(', '));
+            });
+            contentDiv.appendChild(citationContainer);
         }
 
+        messageDiv.appendChild(contentDiv);
+        chatHistoryElement.appendChild(messageDiv);
+        chatHistoryElement.scrollTop = chatHistoryElement.scrollHeight;
+    }
 
-        /**
-         * displays a message in the chat history 
-         */
-        function displayMessage(text, sender, sources = []) {
-            if (initialGreeting) initialGreeting.style.display = 'none';
+    /**
+     * Main Function: Sends message to your FLASK BACKEND
+     */
+    async function sendMessage() {
+        // Check if Firebase Auth is ready (from your top script)
+        if (!window.isAuthReady) {
+            console.warn("Auth not ready yet...");
+            return;
+        }
 
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
+        const userQuery = chatInput.value.trim();
+        if (!userQuery || isSending) return;
 
-            const contentDiv = document.createElement('div');
-            contentDiv.className = 'message-content';
+        // Display user message and clear input
+        displayMessage(userQuery, 'user');
+        chatInput.value = '';
+        isSending = true;
+
+        // Show loading indicator
+        const loadingMessage = document.createElement('div');
+        loadingMessage.id = 'loadingIndicator';
+        loadingMessage.className = 'message ai-message';
+        loadingMessage.innerHTML = '<div class="message-content">Thinking...</div>';
+        chatHistoryElement.appendChild(loadingMessage);
+
+        const newMessage = { role: "user", parts: [{ text: userQuery }] };
+        const contentsPayload = [...chatHistory, newMessage];
+
+        try {
+            // CALL YOUR FLASK BACKEND
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: contentsPayload })
+            });
+
+            const result = await response.json();
+            document.getElementById('loadingIndicator')?.remove();
+
+            // if (result.error) {
+            //     displayMessage("Error: " + JSON.stringify(result.error), 'ai');
+            //     return;
+            // }
             
-            let htmlText = text.replace(/\n/g, '<br>'); 
-            htmlText = htmlText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
-            htmlText = htmlText.replace(/\*(.*?)\*/g, '<em>$1</em>'); 
-            
-            contentDiv.innerHTML = htmlText;
-
-            // to add citation sources
-            if (sources.length > 0) {
-                const citationContainer = document.createElement('div');
-                citationContainer.className = 'citation-container';
-                citationContainer.innerHTML = 'Grounded by: ';
-                
-                const uniqueSources = sources.reduce((acc, current) => {
-                    const x = acc.find(item => item.uri === current.uri);
-                    if (!x) {
-                        return acc.concat([current]);
-                    } else {
-                        return acc;
-                    }
-                }, []);
-
-                uniqueSources.forEach((source, index) => {
-                    if (source.uri && source.title) {
-                        const link = document.createElement('a');
-                        link.href = source.uri;
-                        link.target = '_blank';
-                        link.textContent = source.title;
-                        
-                        citationContainer.appendChild(link);
-                        if (index < uniqueSources.length - 1) {
-                            citationContainer.appendChild(document.createTextNode(', '));
-                        }
-                    }
-                });
-                contentDiv.appendChild(citationContainer);
-            }
-
-            messageDiv.appendChild(contentDiv);
-            chatHistoryElement.appendChild(messageDiv);
-            
-            chatHistoryElement.scrollTop = chatHistoryElement.scrollHeight;
-        }
-
-
-        //  chat logic 
-
-        /**
-         * handle the Enter key press event in the input area.
-         */
-        function handleKeyDown(event) {
-            if (event.key === 'Enter' && !event.shiftKey) {
-                event.preventDefault(); 
-                sendMessage();
-            }
-        }
-        window.handleKeyDown = handleKeyDown; 
-
-
-        /**
-         * main function to send the message to the Gemini API.
-         */
-        async function sendMessage() {
-            if (typeof isAuthReady === 'undefined' || !isAuthReady) {
-                displayMessage("The environment is still loading. Please wait until the status reads 'Ready to chat!'", 'ai');
+            if (result.error) {
+                // If result.error is a string, show it. If it's an object, show the message property.
+                const errorMessage = typeof result.error === 'string' ? result.error : (result.error.message || "An error occurred");
+                displayMessage("⚠️ " + errorMessage, 'ai');
                 return;
             }
 
-            const userQuery = chatInput.value.trim();
-            if (!userQuery || isSending) return;
-
-            // 1. Display user message
-            displayMessage(userQuery, 'user');
-            
-            chatInput.value = '';
-            isSending = true;
-
-            // 2. Prepare payload and add user message to history
-            const newMessage = { role: "user", parts: [{ text: userQuery }] };
-            const contentsPayload = [...chatHistory, newMessage];
-
-            // 3. Display loading indicator
-            const loadingMessage = document.createElement('div');
-            loadingMessage.id = 'loadingIndicator';
-            loadingMessage.className = 'ai-message';
-            loadingMessage.innerHTML = '<div class="message-content loading-dots">...</div>';
-            chatHistoryElement.appendChild(loadingMessage);
-            chatHistoryElement.scrollTop = chatHistoryElement.scrollHeight;
-
-            try {
-                const payload = {
-                    contents: contentsPayload,
-                    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
-                    tools: [{ "google_search": {} }],
-                };
-
-                const options = {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                };
-
-                const response = await fetchWithBackoff(API_URL, options);
-                const result = await response.json();
+            const candidate = result.candidates?.[0];
+            if (candidate && candidate.content?.parts?.[0]?.text) {
+                const aiText = candidate.content.parts[0].text;
                 
-                loadingMessage.remove();
-
-                const candidate = result.candidates?.[0];
-
-                if (candidate && candidate.content?.parts?.[0]?.text) {
-                    const aiText = candidate.content.parts[0].text;
-                    let sources = [];
-                    
-                    const groundingMetadata = candidate.groundingMetadata;
-                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
-                        sources = groundingMetadata.groundingAttributions
-                            .map(attribution => ({ uri: attribution.web?.uri, title: attribution.web?.title }))
-                            .filter(source => source.uri && source.title);
-                    }
-
-                    // 4. Display AI response
-                    displayMessage(aiText, 'ai', sources);
-
-                    // 5. Update global history for next turn
-                    chatHistory.push(newMessage);
-                    chatHistory.push({ role: "model", parts: [{ text: aiText }] });
-
-                } else {
-                    console.error("API response was empty or malformed:", JSON.stringify(result, null, 2));
-                    displayMessage("Sorry, I encountered an error retrieving a response. The AI model didn't provide any text.", 'ai');
+                let sources = [];
+                if (candidate.groundingMetadata?.groundingAttributions) {
+                    sources = candidate.groundingMetadata.groundingAttributions
+                        .map(attr => ({ uri: attr.web?.uri, title: attr.web?.title }))
+                        .filter(s => s.uri);
                 }
 
-            } catch (error) {
-                if (document.getElementById('loadingIndicator')) {
-                    document.getElementById('loadingIndicator').remove();
-                }
-                console.error("Error during sendMessage:", error);
-                displayMessage("An unexpected error occurred during the API call. Please check the browser console for details.", 'ai');
-            } finally {
-                isSending = false;
+                displayMessage(aiText, 'ai', sources);
+
+                // Save to history
+                chatHistory.push(newMessage);
+                chatHistory.push({ role: "model", parts: [{ text: aiText }] });
             }
+        } catch (error) {
+            console.error("Error:", error);
+            document.getElementById('loadingIndicator')?.remove();
+            displayMessage("Could not connect to the server. Make sure Flask is running.", 'ai');
+        } finally {
+            isSending = false;
         }
-        window.sendMessage = sendMessage;
-    </script>
+    }
+    window.sendMessage = sendMessage;
+</script>
 </body>
 </html>
