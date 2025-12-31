@@ -68,23 +68,47 @@ The developers aim to achieve the following objectives:
 # 4. FEATURES OF THE WEB APPLICATION
 
 ## 4.1 Login/Sign Up Page
+![image alt]()
 
 ## 4.2 Homepage
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/011aef5ba618ee3fc769a9a4ff5923a8e70663cb/Interface%20Design/homepage.png)
 
 ## 4.3 Profile Page
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/011aef5ba618ee3fc769a9a4ff5923a8e70663cb/Interface%20Design/profile%20page.png)
+
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/011aef5ba618ee3fc769a9a4ff5923a8e70663cb/Interface%20Design/edit%20profile%20page.png)
 
 ## 4.4 Workout Tutorial Page
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/011aef5ba618ee3fc769a9a4ff5923a8e70663cb/Interface%20Design/workout%20tutorial%20initial%20page.png)
+
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/011aef5ba618ee3fc769a9a4ff5923a8e70663cb/Interface%20Design/workout%20tutorial%20bicep%20curls%20page.png)
+
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/011aef5ba618ee3fc769a9a4ff5923a8e70663cb/Interface%20Design/workout%20tutorial%20shoulder%20press%20page.png)
+
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/011aef5ba618ee3fc769a9a4ff5923a8e70663cb/Interface%20Design/workout%20tutorial%20squats%20page.png)
 
 ## 4.5 Training Page
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/training%20initial%20page.png)
+
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/training%20choose%20page.png)
 
 ## 4.6 BMI Calculator Page
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/bmi%20calculator%20page.png)
 
 ## 4.7 Workout Schedule Page
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/workout%20schedule%20page.png)
 
 ## 4.8 Chatbot Page
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/chatbot%20page.png)
 
 ## 4.9 Progress Records Page
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/progress%20records%20page.png)
+
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/bmi%20records%20page.png)
+
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/training%20records%20page.png)
 
 ## 4.10 Survey Page
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/survey%20page.png)
 
 
