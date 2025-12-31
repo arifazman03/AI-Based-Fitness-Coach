@@ -30,14 +30,23 @@
 <ins>**4. FEATURES OF THE WEB APPLICATION**</ins>
 
 > 4.1 Login/Sign Up Page
+> 
 > 4.2 Homepage
+> 
 > 4.3 Profile Page
+> 
 > 4.4 Workout Tutorial Page
+> 
 > 4.5 Training Page
+> 
 > 4.6 BMI Calculator Page
+> 
 > 4.7 Workout Schedule Page
+> 
 > 4.8 Chatbot Page
+> 
 > 4.9 Progress Records Page
+> 
 > 4.10 Survey Page
 #  
 
