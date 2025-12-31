@@ -64,11 +64,12 @@ The developers aim to achieve the following objectives:
 - To integrate a performance analysis feature that helps users monitor progress and stay motivated. 
 
 # 3. USE CASE OF THE WEB APPLICATION
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/66abeb053154fe2629a165096abb44c9bf015eee/Interface%20Design/use%20case.png)
 
 # 4. FEATURES OF THE WEB APPLICATION
 
 ## 4.1 Login/Sign Up Page
-![image alt]()
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/66abeb053154fe2629a165096abb44c9bf015eee/Interface%20Design/login%20page.png)
 
 ## 4.2 Homepage
 ![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/011aef5ba618ee3fc769a9a4ff5923a8e70663cb/Interface%20Design/homepage.png)
@@ -91,6 +92,8 @@ The developers aim to achieve the following objectives:
 ![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/training%20initial%20page.png)
 
 ![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/training%20choose%20page.png)
+
+![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/66abeb053154fe2629a165096abb44c9bf015eee/Interface%20Design/training%20result%20page.png)
 
 ## 4.6 BMI Calculator Page
 ![image alt](https://github.com/arifazman03/AI-Based-Fitness-Coach/blob/180c57daa16af8d4c50089cd545f668be71d20e1/Interface%20Design/bmi%20calculator%20page.png)
