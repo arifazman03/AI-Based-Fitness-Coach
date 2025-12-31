@@ -58,10 +58,10 @@ University students increasingly struggle to maintain an active lifestyle due to
 # 2. OBJECTIVES OF THE WEB APPLICATION
 
 The developers aim to achieve the following objectives: 
-• To design and implement an AI-powered exercise detection system that can recognize, track, and count different workout movements in real-time. 
-• To integrate computer vision and machine learning models for accurate movement detection and tracking. 
-• To develop a real-time feedback mechanism that provides users with insights on their exercise form and performance. 
-• To integrate a performance analysis feature that helps users monitor progress and stay motivated. 
+- To design and implement an AI-powered exercise detection system that can recognize, track, and count different workout movements in real-time.
+- To integrate computer vision and machine learning models for accurate movement detection and tracking. 
+- To develop a real-time feedback mechanism that provides users with insights on their exercise form and performance. 
+- To integrate a performance analysis feature that helps users monitor progress and stay motivated. 
 
 # 3. USE CASE OF THE WEB APPLICATION
 
