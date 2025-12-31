@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Choose Exercise - AI Fitness Coach</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* CSS copied directly from trainingintl.html (which was originally from bmi.html) */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Exo 2', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f8f0; /* Default light green background for the lower part */
+        }
+
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 120px;
+            height: 120px;
+            z-index: 3; /* Ensure logo is above the top background */
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 220px;
+            background-color: #153B47;
+            padding-top: 20px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar a {
+            display: block;
+            color: #f0f0f0;
+            padding: 15px 25px;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            background-color: #1b4f56;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            z-index: 1001;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 20px;
+            left: 25px;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 220px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: margin-left 0.3s ease;
+            position: relative; /* For positioning the top background */
+            padding-top: 180px; /* Adjust padding to accommodate the top image and title banner */
+            box-sizing: border-box;
+        }
+
+        .main-content.full {
+            margin-left: 0;
+        }
+
+        .nav-links {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- CSS for the split background (from bmi.html) --- */
+        .top-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px; /* Match bmi.html height */
+            background: url('{{ url_for('static', filename='training.jpg') }}'); /* Using TRAINING 3.jpg for the top background */
+            background-size: 58%; /* Cover the area */
+            background-position: center 190px; /* Center the image */
+            z-index: 1; /* Below the main content */
+        }
+
+        .training-title-banner { /* Renamed for clarity for this page */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px; /* Match top-background height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2; /* Above the top background */
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: rgba(0, 0, 0, 0.5); /* Darker overlay for better text visibility on image */
+        }
+
+        /* Container for the main content below the banner */
+        .content-container {
+            z-index: 2; /* Above the background sections */
+            width: 100%;
+            max-width: 600px; /* Adjusted max-width for the form content */
+            box-sizing: border-box;
+            text-align: left;
+            background-color: transparent; /* Transparent to show the light green body background */
+            color: #333;
+        }
+
+        /* New styles for sub-navigation */
+        .sidebar-dropdown {
+            position: relative;
+        }
+
+        .sidebar-dropdown .dropdown-toggle {
+            position: relative;
+            padding-right: 40px; /* Space for an arrow icon */
+            display: block;
+        }
+
+        .sidebar-dropdown .dropdown-toggle::after {
+            content: '\25BC'; /* Down arrow Unicode character */
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: transform 0.3s ease;
+            font-size: 0.8em;
+        }
+
+        .sidebar-dropdown .dropdown-toggle.active::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .sidebar-dropdown .dropdown-menu {
+            display: none;
+            background-color: #1a4a56;
+            padding-left: 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            box-sizing: border-box;
+        }
+
+        .sidebar-dropdown .dropdown-menu.show {
+            display: block;
+            max-height: 200px; /* Max height to allow animation (adjust if more items) */
+        }
+
+        .sidebar-dropdown .dropdown-item {
+            padding: 10px 25px 10px 45px;
+            color: #c0c0c0;
+            display: block;
+        }
+
+        .sidebar-dropdown .dropdown-item:hover {
+            background-color: #205a66;
+            color: white;
+        }
+
+        /* Form specific styles for better integration */
+        .training-form-container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 30px; /* Adjusted to give space below the main title */
+            width: 100%;
+            max-width: 450px; /* Adjust max-width for the form */
+            text-align: left;
+            margin: 0 auto;
+        }
+        .training-form-container .form-label {
+            font-weight: bold;
+            color: #444;
+        }
+        .training-form-container .form-control {
+            background-color: #D3D3D3;
+            border: 1px solid #ccc;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .training-form-container .btn-primary {
+            background-color: #00FF00; /* Match sidebar color */
+            border-color: #00FF00;
+            color: black;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .training-form-container .btn-primary:hover {
+            background-color: #00E600;
+            border-color: #00E600;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding-top: 100px;
+            }
+            .main-content.full {
+                margin-left: 0;
+            }
+            .top-background, .training-title-banner {
+                height: 120px;
+                font-size: 1.8rem;
+            }
+            .training-form-container { max-width: 90%; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo from bmi.html -->
+    <img src="{{ url_for('static', filename='logonew.png') }}" alt="Logo" class="logo">
+
+    <!-- Sidebar Toggle Button from bmi.html -->
+    <button class="toggle-btn" onclick="toggleSidebar()" id="toggle-icon">&gt;</button>
+
+    <!-- Sidebar Navigation from bmi.html -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-links">
+            <a href="{{ url_for('main.profile') }}">Profile</a>
+            <a href="{{ url_for('main.dashboard') }}">Home</a>
+            <a href="{{ url_for('main.tutorial_initial') }}">Workout Tutorial</a>
+
+            <!-- Training link with sub-menu -->
+            <div class="sidebar-dropdown">
+                <a href="#" class="dropdown-toggle active" id="trainingDropdownToggle">Training</a>
+                <div class="dropdown-menu show" id="trainingSubMenu">
+                    <!-- Instruction link -->
+                    <a href="{{ url_for('main.trainingintl') }}" class="dropdown-item">Instruction</a>
+                    <!-- Choose Exercise link (this page) -->
+                    <a href="{{ url_for('main.training') }}" class="dropdown-item active">Choose Exercise</a>
+                </div>
+            </div>
+
+            <a href="{{ url_for('main.bmi') }}">BMI Calculator</a>
+            <a href="{{ url_for('main.workout_schedule') }}">Workout Schedule</a>
+            <a href="#">Chatbot</a>
+            <a href="{{ url_for('main.printl') }}">Progress Records</a>
+        </div>
+        <div class="logout">
+            <a href="{{ url_for('main.logout_confirmation') }}">
+                <i class="fas fa-sign-out-alt"></i> Log Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area (structured like bmi.html's main-content) -->
+    <div class="main-content" id="main">
+        <!-- Top Background Image (from TRAINING 3.jpg) -->
+        <div class="top-background"></div>
+        <!-- Title Banner for Training Page -->
+        <div class="training-title-banner">
+            TRAINING
+        </div>
+
+        <!-- Main content below the banner (AI Training Setup form) -->
+        <div class="content-container text-center">
+            <h2 class="mt-5" style="color: #333; font-weight: bold; margin-bottom: 30px;">AI Training Setup</h2>
+
+            <div class="training-form-container">
+                <form method="POST" action="{{ url_for('main.start_training') }}">
+                    <div class="mb-3">
+                        <label for="exercise-select" class="form-label">Choose Exercise</label>
+                        <select name="exercise" class="form-select" id="exercise-select" required>
+                            <option value="" disabled selected>Select an exercise</option>
+                            <option value="bicep_curl">Bicep Curl</option>
+                            <option value="squat">Squat</option>
+                            <option value="shoulder_press">Shoulder Press</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="weight" class="form-label">Enter your weight (kg)</label>
+                        <input type="number" name="weight" id="weight" class="form-control" placeholder="e.g., 70" required step="0.01" min="0.01">
+                    </div>
+                    <div class="mb-3">
+                        <label for="target_calories" class="form-label">Target Calories</label>
+                        <input type="number" name="target_calories" id="target_calories" class="form-control" placeholder="e.g., 300" required min="1">
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Start</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle (required for modals and dropdowns) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // JavaScript for sidebar toggle (copied from bmi.html)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('main');
+            const icon = document.getElementById('toggle-icon');
+            sidebar.classList.toggle('collapsed');
+            main.classList.toggle('full');
+            icon.innerHTML = sidebar.classList.contains('collapsed') ? '&gt;' : '&lt;';
+        }
+
+        // JavaScript for Training sub-menu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const trainingDropdownToggle = document.getElementById('trainingDropdownToggle');
+            const trainingSubMenu = document.getElementById('trainingSubMenu');
+
+            if (trainingDropdownToggle && trainingSubMenu) {
+                trainingDropdownToggle.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevent default link behavior
+                    trainingSubMenu.classList.toggle('show');
+                    trainingDropdownToggle.classList.toggle('active'); // For arrow rotation
+                });
+            }
+        });
+    </script>
+</body>
+</html>

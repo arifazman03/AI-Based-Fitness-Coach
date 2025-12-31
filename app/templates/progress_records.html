@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Records - AI Fitness Coach</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts for 'Exo 2' -->
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Base CSS from trainingintl.html */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Exo 2', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f8f0; /* Default light green background for the lower part */
+        }
+
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 120px;
+            height: 120px;
+            z-index: 3;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 220px;
+            background-color: #153B47;
+            padding-top: 20px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar a {
+            display: block;
+            color: #f0f0f0;
+            padding: 15px 25px;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            background-color: #1b4f56;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            z-index: 1001;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 20px;
+            left: 25px;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 220px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: margin-left 0.3s ease;
+            position: relative;
+            padding-top: 180px;
+            box-sizing: border-box;
+        }
+
+        .main-content.full {
+            margin-left: 0;
+        }
+
+        .nav-links {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- CSS for the split background (from trainingintl.html) --- */
+      .top-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            background: url('{{ url_for('static', filename='pr.jpg') }}'); /* Using TRAINING 8.jpg for the top background as per screenshot */
+            background-size: 58%;
+            background-position: center ;
+            z-index: 1;
+        }
+
+        .title-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Container for the main content below the banner */
+        .content-container {
+            z-index: 2;
+            width: 100%;
+            max-width: 960px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: left;
+            background-color: transparent;
+            color: #333;
+        }
+
+        /* Specific styles for Progress Records page */
+        .progress-intro {
+            margin-top: 30px;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #444;
+        }
+
+        .record-cards-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .record-card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+            flex: 1 1 calc(50% - 30px);
+            min-width: 300px;
+            max-width: 450px;
+            box-sizing: border-box;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .record-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+
+        .record-card .icon {
+            font-size: 3rem; /* Adjusted to match trainingintl.html icon style */
+            color: #153B47; /* Adjusted to match trainingintl.html icon style */
+            margin-bottom: 20px;
+        }
+
+        .record-card h3 {
+            font-weight: bold;
+            color: #153B47;
+            margin-bottom: 15px;
+        }
+
+        .record-card p {
+            font-size: 1rem;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .consistency-message {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 40px;
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* New styles for sub-navigation */
+        .sidebar-dropdown {
+            position: relative;
+        }
+
+        .sidebar-dropdown .dropdown-toggle {
+            position: relative;
+            padding-right: 40px;
+            display: block;
+        }
+
+        .sidebar-dropdown .dropdown-toggle::after {
+            content: '\25BC';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: transform 0.3s ease;
+            font-size: 0.8em;
+        }
+
+        .sidebar-dropdown .dropdown-toggle.active::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .sidebar-dropdown .dropdown-menu {
+            display: none;
+            background-color: #1a4a56;
+            padding-left: 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            box-sizing: border-box;
+        }
+
+        .sidebar-dropdown .dropdown-menu.show {
+            display: block;
+            max-height: 200px;
+        }
+
+        .sidebar-dropdown .dropdown-item {
+            padding: 10px 25px 10px 45px;
+            color: #c0c0c0;
+            display: block;
+        }
+
+        .sidebar-dropdown .dropdown-item:hover {
+            background-color: #205a66;
+            color: white;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding-top: 100px;
+            }
+            .main-content.full {
+                margin-left: 0;
+            }
+            .top-background, .title-banner {
+                height: 120px;
+                font-size: 1.8rem;
+            }
+            .record-card {
+                flex: 1 1 100%;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .record-card {
+                padding: 20px;
+            }
+            .record-card .icon {
+                font-size: 3rem;
+            }
+            .record-card h3 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo from trainingintl.html -->
+    <img src="{{ url_for('static', filename='logonew.png') }}" alt="Logo" class="logo">
+
+    <!-- Sidebar Toggle Button from trainingintl.html -->
+    <button class="toggle-btn" onclick="toggleSidebar()" id="toggle-icon">&gt;</button>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-links">
+            <a href="{{ url_for('main.profile') }}">Profile</a>
+            <a href="{{ url_for('main.dashboard') }}">Home</a>
+            <a href="{{ url_for('main.tutorial_initial') }}">Workout Tutorial</a>
+            <a href="{{ url_for('main.trainingintl') }}">Training</a>
+           
+
+            <a href="{{ url_for('main.bmi') }}">BMI Calculator</a>
+            <a href="{{ url_for('main.workout_schedule') }}">Workout Schedule</a>
+            <a href="{{ url_for('main.chatbot') }}">Chatbot</a>
+
+            <!-- Progress Records link with sub-menu -->
+            <div class="sidebar-dropdown">
+                <a href="#" class="dropdown-toggle active" id="progressDropdownToggle">Progress Records</a>
+                <div class="dropdown-menu show" id="progressSubMenu">
+                    <a href="{{ url_for('main.printl') }}" class="dropdown-item">Information</a> {# Assuming a new route for the info page #}
+                    <a href="{{ url_for('main.progress') }}" class="dropdown-item active">Graph Summary</a> {# This page is Graph Summary #}
+                </div>
+            </div>
+        </div>
+        <div class="logout">
+            <a href="{{ url_for('main.logout_confirmation') }}">
+                <i class="fas fa-sign-out-alt"></i> Log Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content" id="main">
+        <!-- Top Background Image -->
+        <div class="top-background"></div>
+        <!-- Title Banner for Progress Records Page -->
+        <div class="title-banner">
+            PROGRESS RECORDS
+        </div>
+
+        <!-- Main content below the banner -->
+        <div class="content-container">
+            <h2 class="mb-4 text-center">Graph Summary</h2>
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs" id="progressTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link {% if active_tab == 'bmi' %}active{% endif %}" id="bmi-tab" data-bs-toggle="tab" data-bs-target="#bmi" type="button" role="tab">BMI Records</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link {% if active_tab == 'training' %}active{% endif %}" id="training-tab" data-bs-toggle="tab" data-bs-target="#training" type="button" role="tab">Training Records</button>
+                </li>
+            </ul>
+
+            <!-- Tab content -->
+            <div class="tab-content mt-3">
+
+                <!-- BMI Tab -->
+                <div class="tab-pane fade {% if active_tab == 'bmi' %}show active{% endif %}" id="bmi" role="tabpanel">
+                    <canvas id="bmiChart"></canvas>
+                </div>
+
+                <!-- Training Tab -->
+                <div class="tab-pane fade {% if active_tab == 'training' %}show active{% endif %}" id="training" role="tabpanel">
+                    <!-- Exercise Filter -->
+                    <form method="get" class="mb-3" id="trainingFilterForm">
+                        <label for="exercise_type" class="form-label">Filter by Exercise Type:</label>
+                        <select name="exercise_type" id="exercise_type" class="form-select w-auto d-inline-block" onchange="submitTrainingFilter()">
+                            <option value="all" {% if selected_type == 'all' %}selected{% endif %}>All</option>
+                            {% for etype in exercise_types %}
+                                <option value="{{ etype }}" {% if selected_type == etype %}selected{% endif %}>{{ etype|capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="hidden" name="active_tab" id="activeTabInput" value="{{ active_tab }}">
+                    </form>
+
+                    <!-- Chart -->
+                    <canvas id="trainingChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // JavaScript for sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('main');
+            const icon = document.getElementById('toggle-icon');
+            sidebar.classList.toggle('collapsed');
+            main.classList.toggle('full');
+            icon.innerHTML = sidebar.classList.contains('collapsed') ? '&gt;' : '&lt;';
+        }
+
+        // Refactored JavaScript for ALL sidebar dropdowns
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownToggles = document.querySelectorAll('.sidebar-dropdown .dropdown-toggle');
+            const dropdownMenus = document.querySelectorAll('.sidebar-dropdown .dropdown-menu');
+
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const targetMenuId = this.id.replace('DropdownToggle', 'SubMenu');
+                    const targetMenu = document.getElementById(targetMenuId);
+
+                    // Close all other menus and deactivate their toggles
+                    dropdownMenus.forEach(menu => {
+                        if (menu !== targetMenu && menu.classList.contains('show')) {
+                            menu.classList.remove('show');
+                            menu.previousElementSibling.classList.remove('active'); // Deactivate its toggle
+                        }
+                    });
+
+                    // Toggle the clicked menu and its toggle's active state
+                    if (targetMenu) {
+                        targetMenu.classList.toggle('show');
+                        this.classList.toggle('active');
+                    }
+                });
+            });
+
+            // Function to submit the training filter form while preserving the active tab
+            window.submitTrainingFilter = function() {
+                const activeTabInput = document.getElementById('activeTabInput');
+                activeTabInput.value = 'training'; // Always set to 'training' when this form submits
+                document.getElementById('trainingFilterForm').submit();
+            };
+
+            // Initialize active tab based on URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeTabFromUrl = urlParams.get('active_tab');
+
+            if (activeTabFromUrl) {
+                const tabButton = document.getElementById(activeTabFromUrl + '-tab');
+                if (tabButton) {
+                    new bootstrap.Tab(tabButton).show();
+                }
+            } else {
+                // Default to BMI tab if no active_tab parameter is present
+                new bootstrap.Tab(document.getElementById('bmi-tab')).show();
+            }
+
+
+            // BMI Chart with Category Tooltip
+            const bmiCtx = document.getElementById('bmiChart').getContext('2d');
+            const bmiDates = {{ bmi_dates | tojson }};
+            const bmiValues = {{ bmi_values | tojson }};
+            const bmiCategories = {{ bmi_categories | tojson }};
+
+            new Chart(bmiCtx, {
+                type: 'line',
+                data: {
+                    labels: bmiDates,
+                    datasets: [{
+                        label: 'BMI Value',
+                        data: bmiValues,
+                        borderColor: 'blue',
+                        fill: false,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const index = context.dataIndex;
+                                    const value = context.dataset.data[index];
+                                    const category = bmiCategories[index];
+                                    return `BMI: ${value}, Category: ${category}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            title: { display: true, text: 'BMI' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Date' }
+                        }
+                    }
+                }
+            });
+
+            // Training Chart (Calories + Reps)
+            const trainingCtx = document.getElementById('trainingChart').getContext('2d');
+            const sessionDates = {{ session_dates | tojson }};
+            const caloriesBurned = {{ calories_burned | tojson }};
+            const repsCompleted = {{ reps_completed | tojson }};
+            const exerciseTypes = {{ exercise_types_series | tojson }};
+
+            new Chart(trainingCtx, {
+                type: 'line',
+                data: {
+                    labels: sessionDates,
+                    datasets: [
+                        {
+                            label: 'Calories Burned',
+                            data: caloriesBurned,
+                            borderColor: 'orange',
+                            yAxisID: 'y1',
+                            tension: 0.4,
+                            fill: false
+                        },
+                        {
+                            label: 'Reps Completed',
+                            data: repsCompleted,
+                            borderColor: 'purple',
+                            yAxisID: 'y2',
+                            tension: 0.4,
+                            fill: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Training Performance (Calories vs Reps)'
+                        },
+                        legend: {
+                            position: 'top'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                beforeBody: function(context) {
+                                    const index = context[0].dataIndex;
+                                    const exercise = exerciseTypes[index] || 'Unknown';
+                                    return `Exercise Type: ${exercise}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y1: {
+                            type: 'linear',
+                            position: 'left',
+                            beginAtZero: true,
+                            title: { display: true, text: 'Calories Burned' }
+                        },
+                        y2: {
+                            type: 'linear',
+                            position: 'right',
+                            beginAtZero: true,
+                            title: { display: true, text: 'Reps Completed' },
+                            grid: { drawOnChartArea: false }
+                        },
+                        x: {
+                            title: { display: true, text: 'Date' }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot - AI Fitness Coach</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Exo 2', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f8f0; 
+        }
+
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 120px;
+            height: 120px;
+            z-index: 3;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 220px;
+            background-color: #153B47;
+            padding-top: 20px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar a {
+            display: block;
+            color: #f0f0f0;
+            padding: 15px 25px;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            background-color: #1b4f56;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            z-index: 1001;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 20px;
+            left: 25px;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 220px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: margin-left 0.3s ease;
+            position: relative;
+            padding-top: 180px;
+            box-sizing: border-box;
+        }
+
+        .main-content.full {
+            margin-left: 0;
+        }
+
+        .nav-links {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            background: url('{{ url_for('static', filename='chatbot.jpg') }}') center/cover;
+            z-index: 1;
+        }
+
+        .title-banner { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            color: white;
+            font-size: 3.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); 
+        }
+
+        .chatbot-container {
+            z-index: 2;
+            width: 100%;
+            max-width: 900px;
+            height: calc(100vh - 180px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 20px 50px 20px;
+            background-color: #e0f8f0; 
+            box-sizing: border-box;
+        }
+
+        .initial-greeting {
+            text-align: center;
+            padding-top: 30px;
+        }
+
+        .chatbot-icon {
+            font-size: 3rem;
+            color: #153B47;
+            margin-bottom: 10px;
+            display: inline-block;
+            border: 2px solid #153B47;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .chatbot-greeting {
+            font-size: 1.5rem;
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 30px;
+        }
+        
+        .loading-status {
+            font-size: 0.9rem;
+            color: #777;
+            margin-top: -10px;
+            margin-bottom: 20px;
+            font-weight: bold; 
+        }
+
+        .chat-history {
+            width: 100%;
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            max-height: calc(100vh - 350px);
+        }
+
+        .message {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .user-message {
+            justify-content: flex-end;
+        }
+
+        .ai-message {
+            justify-content: flex-start;
+        }
+
+        .message-content {
+            max-width: 75%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            line-height: 1.5;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .user-message .message-content {
+            background-color: #153B47;
+            color: white;
+            border-bottom-right-radius: 2px;
+        }
+
+        .ai-message .message-content {
+            background-color: #fff;
+            color: #333;
+            border-bottom-left-radius: 2px;
+            border: 1px solid #ccc;
+        }
+
+        .loading-dots {
+            font-size: 2rem;
+            color: #153B47;
+        }
+
+        .citation-container {
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: #666;
+            text-align: right;
+            border-top: 1px dashed #eee;
+            padding-top: 5px;
+            display: block;
+        }
+
+        .citation-container a {
+            color: #153B47;
+            text-decoration: none;
+        }
+
+        .chatbot-input-area {
+            width: 100%;
+            position: relative;
+        }
+
+        .chatbot-input {
+            width: 100%;
+            min-height: 50px;
+            padding: 10px 60px 10px 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            resize: none; 
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .chatbot-input:focus {
+            outline: none;
+            border-color: #153B47;
+            box-shadow: 0 0 8px rgba(21, 59, 71, 0.3);
+        }
+
+        .input-send-icon {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            font-size: 1.8rem;
+            color: #153B47;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .input-send-icon:hover {
+            background-color: #cce7e7;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding-top: 120px;
+            }
+            .title-banner {
+                font-size: 2rem;
+            }
+            .chatbot-container {
+                height: calc(100vh - 120px);
+                padding-top: 10px;
+            }
+            .chat-history {
+                max-height: calc(100vh - 250px);
+            }
+        }
+    </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        // Define global authentication state readiness
+        window.isAuthReady = false; 
+        
+        try {
+            const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+            if (Object.keys(firebaseConfig).length > 0) {
+                window.app = initializeApp(firebaseConfig);
+                window.auth = getAuth(window.app);
+                
+                const authPromise = typeof __initial_auth_token !== 'undefined'
+                    ? signInWithCustomToken(window.auth, __initial_auth_token)
+                    : signInAnonymously(window.auth);
+                
+                authPromise
+                    .then(() => {
+                        console.log("Firebase Auth signed in successfully. Authentication is ready.");
+                        window.isAuthReady = true; 
+                        document.getElementById('statusText').textContent = 'Status: Ready to chat!';
+                        document.getElementById('statusText').style.color = '#153B47';
+                    })
+                    .catch(error => {
+                        console.error("Firebase Auth sign-in failed:", error);
+                        document.getElementById('statusText').textContent = 'Status: Auth Error. Try refreshing.';
+                        document.getElementById('statusText').style.color = 'red';
+                        window.isAuthReady = true; 
+                    });
+
+            } else {
+                console.warn("Firebase config not available. Proceeding without explicit Firebase auth setup.");
+                // Since Firebase is not available, we assume the API Key (set below) will be used directly.
+                window.isAuthReady = true; 
+                document.getElementById('statusText').textContent = 'Status: Ready (Using direct API Key)';
+                document.getElementById('statusText').style.color = '#153B47';
+            }
+        } catch (e) {
+            console.error("Error during Firebase initialization:", e);
+            window.isAuthReady = true; 
+        }
+    </script>
+</head>
+<body>
+    <img src="{{ url_for('static', filename='logonew.png') }}" alt="Logo" class="logo">
+
+    <button class="toggle-btn" onclick="toggleSidebar()" id="toggle-icon">&lt;</button>
+
+    <div class="sidebar" id="sidebar">
+        <div class="nav-links">
+            <a href="{{ url_for('main.profile') }}">Profile</a>
+            <a href="{{ url_for('main.dashboard') }}">Home</a>
+            <a href="{{ url_for('main.tutorial_initial') }}">Workout Tutorial</a>
+            <a href="{{ url_for('main.trainingintl') }}">Training</a>
+            <a href="{{ url_for('main.bmi') }}">BMI Calculator</a>
+            <a href="{{ url_for('main.workout_schedule') }}">Workout Schedule</a>
+            <a href="{{ url_for('main.chatbot') }}">Chatbot</a> 
+            <a href="{{ url_for('main.printl') }}">Progress Records</a>
+        </div>
+        <div class="logout">
+            <a href="{{ url_for('main.logout_confirmation') }}">
+                <i class="fas fa-sign-out-alt"></i> Log Out
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content" id="main">
+        <div class="top-background"></div>
+        <div class="title-banner">
+            AI CHATBOT
+        </div>
+
+        <div class="chatbot-container">
+            <div id="chatHistory" class="chat-history">
+                <div id="initialGreeting" class="initial-greeting">
+                    <div class="chatbot-icon">
+                        <i class="far fa-comment-dots"></i><i class="fas fa-sparkles" style="font-size: 0.5em; position: relative; top: -10px; left: -5px;"></i>
+                    </div>
+                    <p class="chatbot-greeting">
+                        Hey, I'm AI Chatbot👋<br>
+                        Let's Talk Fitness
+                    </p>
+                    <p class="loading-status" id="statusText">
+                        Status: Loading environment...
+                    </p>
+                </div>
+            </div>
+            
+            <div class="chatbot-input-area">
+                <textarea 
+                    class="chatbot-input" 
+                    id="chatInput" 
+                    placeholder="Ask me..."
+                    rows="2"
+                    onkeydown="handleKeyDown(event)"
+                ></textarea>
+                <div class="input-send-icon" onclick="sendMessage()">
+                    <i class="fas fa-arrow-up"></i> 
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = "AIzaSyCC5Zr8hHf2tUVClC4zyhYOlOhjqwNLUnM"; 
+        const MODEL = 'gemini-2.5-flash'; 
+        
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`; 
+        
+        const SYSTEM_PROMPT = "You are an expert, supportive AI Fitness Coach. Your goal is to provide accurate, safe, and motivating advice on fitness, workouts, nutrition, and exercise form. Always use Google Search for current, factual, or specific requests. Keep responses encouraging and easy to understand.";
+
+        const chatHistoryElement = document.getElementById('chatHistory');
+        const chatInput = document.getElementById('chatInput');
+        const initialGreeting = document.getElementById('initialGreeting');
+
+        let chatHistory = [];
+        let isSending = false; 
+
+        /**
+         * handle the sidebar toggle logic.
+         */
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('main');
+            const icon = document.getElementById('toggle-icon');
+            const isCollapsed = sidebar.classList.toggle('collapsed');
+            main.classList.toggle('full');
+            icon.innerHTML = isCollapsed ? '&gt;' : '&lt;';
+        }
+        document.getElementById('toggle-icon').innerHTML = '&lt;';
+        window.toggleSidebar = toggleSidebar; 
+
+        /**
+         * utility for making API calls
+         */
+        async function fetchWithBackoff(url, options, maxRetries = 5, delay = 1000) {
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(url, options);
+                    if (response.ok) {
+                        return response;
+                    }
+                    if (response.status === 429 || response.status >= 500) {
+                        console.warn(`Attempt ${i + 1} failed with status ${response.status}. Retrying in ${delay}ms...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2; 
+                        continue;
+                    }
+                    const errorText = await response.text();
+                    throw new Error(`API failed with status ${response.status}: ${errorText}`);
+                } catch (error) {
+                    if (i === maxRetries - 1) {
+                        throw error;
+                    }
+                    console.warn(`Attempt ${i + 1} failed due to error. Retrying in ${delay}ms...`, error);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2; 
+                }
+            }
+            throw new Error("Failed to fetch after multiple retries.");
+        }
+
+
+        /**
+         * displays a message in the chat history 
+         */
+        function displayMessage(text, sender, sources = []) {
+            if (initialGreeting) initialGreeting.style.display = 'none';
+
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'message-content';
+            
+            let htmlText = text.replace(/\n/g, '<br>'); 
+            htmlText = htmlText.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
+            htmlText = htmlText.replace(/\*(.*?)\*/g, '<em>$1</em>'); 
+            
+            contentDiv.innerHTML = htmlText;
+
+            // to add citation sources
+            if (sources.length > 0) {
+                const citationContainer = document.createElement('div');
+                citationContainer.className = 'citation-container';
+                citationContainer.innerHTML = 'Grounded by: ';
+                
+                const uniqueSources = sources.reduce((acc, current) => {
+                    const x = acc.find(item => item.uri === current.uri);
+                    if (!x) {
+                        return acc.concat([current]);
+                    } else {
+                        return acc;
+                    }
+                }, []);
+
+                uniqueSources.forEach((source, index) => {
+                    if (source.uri && source.title) {
+                        const link = document.createElement('a');
+                        link.href = source.uri;
+                        link.target = '_blank';
+                        link.textContent = source.title;
+                        
+                        citationContainer.appendChild(link);
+                        if (index < uniqueSources.length - 1) {
+                            citationContainer.appendChild(document.createTextNode(', '));
+                        }
+                    }
+                });
+                contentDiv.appendChild(citationContainer);
+            }
+
+            messageDiv.appendChild(contentDiv);
+            chatHistoryElement.appendChild(messageDiv);
+            
+            chatHistoryElement.scrollTop = chatHistoryElement.scrollHeight;
+        }
+
+
+        //  chat logic 
+
+        /**
+         * handle the Enter key press event in the input area.
+         */
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault(); 
+                sendMessage();
+            }
+        }
+        window.handleKeyDown = handleKeyDown; 
+
+
+        /**
+         * main function to send the message to the Gemini API.
+         */
+        async function sendMessage() {
+            if (typeof isAuthReady === 'undefined' || !isAuthReady) {
+                displayMessage("The environment is still loading. Please wait until the status reads 'Ready to chat!'", 'ai');
+                return;
+            }
+
+            const userQuery = chatInput.value.trim();
+            if (!userQuery || isSending) return;
+
+            // 1. Display user message
+            displayMessage(userQuery, 'user');
+            
+            chatInput.value = '';
+            isSending = true;
+
+            // 2. Prepare payload and add user message to history
+            const newMessage = { role: "user", parts: [{ text: userQuery }] };
+            const contentsPayload = [...chatHistory, newMessage];
+
+            // 3. Display loading indicator
+            const loadingMessage = document.createElement('div');
+            loadingMessage.id = 'loadingIndicator';
+            loadingMessage.className = 'ai-message';
+            loadingMessage.innerHTML = '<div class="message-content loading-dots">...</div>';
+            chatHistoryElement.appendChild(loadingMessage);
+            chatHistoryElement.scrollTop = chatHistoryElement.scrollHeight;
+
+            try {
+                const payload = {
+                    contents: contentsPayload,
+                    systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
+                    tools: [{ "google_search": {} }],
+                };
+
+                const options = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                };
+
+                const response = await fetchWithBackoff(API_URL, options);
+                const result = await response.json();
+                
+                loadingMessage.remove();
+
+                const candidate = result.candidates?.[0];
+
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    const aiText = candidate.content.parts[0].text;
+                    let sources = [];
+                    
+                    const groundingMetadata = candidate.groundingMetadata;
+                    if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                        sources = groundingMetadata.groundingAttributions
+                            .map(attribution => ({ uri: attribution.web?.uri, title: attribution.web?.title }))
+                            .filter(source => source.uri && source.title);
+                    }
+
+                    // 4. Display AI response
+                    displayMessage(aiText, 'ai', sources);
+
+                    // 5. Update global history for next turn
+                    chatHistory.push(newMessage);
+                    chatHistory.push({ role: "model", parts: [{ text: aiText }] });
+
+                } else {
+                    console.error("API response was empty or malformed:", JSON.stringify(result, null, 2));
+                    displayMessage("Sorry, I encountered an error retrieving a response. The AI model didn't provide any text.", 'ai');
+                }
+
+            } catch (error) {
+                if (document.getElementById('loadingIndicator')) {
+                    document.getElementById('loadingIndicator').remove();
+                }
+                console.error("Error during sendMessage:", error);
+                displayMessage("An unexpected error occurred during the API call. Please check the browser console for details.", 'ai');
+            } finally {
+                isSending = false;
+            }
+        }
+        window.sendMessage = sendMessage;
+    </script>
+</body>
+</html>

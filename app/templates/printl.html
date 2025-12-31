@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Records - AI Fitness Coach</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Google Fonts for 'Exo 2' -->
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Base CSS from trainingintl.html */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Exo 2', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f8f0; /* Default light green background for the lower part */
+        }
+
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 120px;
+            height: 120px;
+            z-index: 3;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 220px;
+            background-color: #153B47;
+            padding-top: 20px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar a {
+            display: block;
+            color: #f0f0f0;
+            padding: 15px 25px;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            background-color: #1b4f56;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            z-index: 1001;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 20px;
+            left: 25px;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 220px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: margin-left 0.3s ease;
+            position: relative;
+            padding-top: 180px;
+            box-sizing: border-box;
+        }
+
+        .main-content.full {
+            margin-left: 0;
+        }
+
+        .nav-links {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- CSS for the split background (from trainingintl.html) --- */
+        .top-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            background: url('{{ url_for('static', filename='pr.jpg') }}'); /* Using TRAINING 8.jpg for the top background as per screenshot */
+            background-size: 58%;
+            background-position: center ;
+            z-index: 1;
+        }
+
+        .title-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2;
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Container for the main content below the banner */
+        .content-container {
+            z-index: 2;
+            width: 100%;
+            max-width: 960px;
+          
+            box-sizing: border-box;
+            text-align: left;
+            background-color: transparent;
+            color: #333;
+        }
+
+        /* Specific styles for Progress Records page */
+        .progress-intro {
+            margin-top: 30px;
+            margin-bottom: 40px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #444;
+        }
+
+        /* Removed .progress-options as requested */
+
+        .record-cards-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 50px;
+        }
+
+        .record-card {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+            flex: 1 1 calc(50% - 30px);
+            min-width: 300px;
+            max-width: 450px;
+            box-sizing: border-box;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .record-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            background-color: cyan ;
+        }
+
+        .record-card .icon {
+            font-size: 3rem; /* Adjusted to match trainingintl.html icon style */
+            color: #153B47; /* Adjusted to match trainingintl.html icon style */
+            margin-bottom: 20px;
+        }
+
+        .record-card h3 {
+            font-weight: bold;
+            color: #153B47;
+            margin-bottom: 15px;
+        }
+
+        .record-card p {
+            font-size: 1rem;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .consistency-message {
+            text-align: center;
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 40px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+      .consistency-message:hover {
+          background-color:#D4AF37;
+        }
+
+        /* New styles for sub-navigation (copied from trainingintl.html) */
+        .sidebar-dropdown {
+            position: relative;
+        }
+
+        .sidebar-dropdown .dropdown-toggle {
+            position: relative;
+            padding-right: 40px;
+            display: block;
+        }
+
+        .sidebar-dropdown .dropdown-toggle::after {
+            content: '\25BC';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: transform 0.3s ease;
+            font-size: 0.8em;
+        }
+
+        .sidebar-dropdown .dropdown-toggle.active::after {
+            transform: translateY(-50%) rotate(180deg);
+        }
+
+        .sidebar-dropdown .dropdown-menu {
+            display: none;
+            background-color: #1a4a56;
+            padding-left: 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            box-sizing: border-box;
+        }
+
+        .sidebar-dropdown .dropdown-menu.show {
+            display: block;
+            max-height: 200px; /* Adjust if more items are added */
+        }
+
+        .sidebar-dropdown .dropdown-item {
+            padding: 10px 25px 10px 45px;
+            color: #c0c0c0;
+            display: block;
+        }
+
+        .sidebar-dropdown .dropdown-item:hover {
+            background-color: #205a66;
+            color: white;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .main-content {
+                margin-left: 0;
+                padding-top: 100px;
+            }
+            .main-content.full {
+                margin-left: 0;
+            }
+            .top-background, .title-banner {
+                height: 120px;
+                font-size: 1.8rem;
+            }
+            .record-card {
+                flex: 1 1 100%;
+                max-width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .record-card {
+                padding: 20px;
+            }
+            .record-card .icon {
+                font-size: 3rem;
+            }
+            .record-card h3 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo from trainingintl.html -->
+    <img src="{{ url_for('static', filename='logonew.png') }}" alt="Logo" class="logo">
+
+    <!-- Sidebar Toggle Button from trainingintl.html -->
+    <button class="toggle-btn" onclick="toggleSidebar()" id="toggle-icon">&gt;</button>
+
+   <!-- Sidebar Navigation from bmi.html -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-links">
+            <a href="{{ url_for('main.profile') }}">Profile</a>
+            <a href="{{ url_for('main.dashboard') }}">Home</a>
+            <a href="{{ url_for('main.tutorial_initial') }}">Workout Tutorial</a>
+            <a href="{{ url_for('main.trainingintl') }}">Training</a>
+            <a href="{{ url_for('main.bmi') }}">BMI Calculator</a>
+            <a href="{{ url_for('main.workout_schedule') }}">Workout Schedule</a>
+            <a href="{{ url_for('main.chatbot') }}">Chatbot</a>
+
+               <!-- progress link with sub-menu -->
+            <div class="sidebar-dropdown">
+                <a href="#" class="dropdown-toggle active" id="wsDropdownToggle">Progress Records</a>
+                <div class="dropdown-menu show" id="wsSubMenu">
+                    <!-- Instruction link points to the current page -->
+                    <a href="{{ url_for('main.printl') }}" class="dropdown-item active">Information</a>
+                    <!-- Link to the new Choose Exercise page -->
+                    <a href="{{ url_for('main.progress') }}" class="dropdown-item">Graph Summary</a>
+                </div>
+            </div>
+
+           
+        </div>
+        <div class="logout">
+            <a href="{{ url_for('main.logout_confirmation') }}">
+                <i class="fas fa-sign-out-alt"></i> Log Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content" id="main">
+        <!-- Top Background Image -->
+        <div class="top-background"></div>
+        <!-- Title Banner for Progress Records Page -->
+        <div class="title-banner">
+            PROGRESS RECORDS
+        </div>
+
+        <!-- Main content below the banner -->
+        <div class="content-container">
+            <p class="progress-intro text-center">
+                Your Progress Records <br>
+                Welcome to your personal fitness archive! Here's where you can reflect
+                on your journey — every rep counted, every milestone achieved, and
+                every improvement in your health.
+            </p>
+
+            <!-- Removed the "Choose records" dropdown as requested -->
+
+            <div class="record-cards-section">
+                <div class="record-card">
+                    <div class="icon">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                    <h3>Performance Summary</h3>
+                    <p>
+                        Track how far you've come, from your
+                        earliest sessions to your latest gains.
+                        Whether it's squats, shoulder press, or bicep
+                        curl, see how many calories your burn form, rep counts, and
+                        consistency have improved over time.
+                    </p>
+                </div>
+                <div class="record-card">
+                    <div class="icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3>BMI & Health Trends</h3>
+                    <p>
+                        Monitor your Body Mass
+                        Index (BMI) records and
+                        watch your progress
+                        unfold visually. Small
+                        changes = big wins, and
+                        we're here to help you
+                        stay on track.
+                    </p>
+                </div>
+            </div>
+
+            <p class="consistency-message">
+                Remember: Consistency is key. Every entry here is a reminder that you're
+                showing up and putting in the work.
+            </p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // JavaScript for sidebar toggle
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('main');
+            const icon = document.getElementById('toggle-icon');
+            sidebar.classList.toggle('collapsed');
+            main.classList.toggle('full');
+            icon.innerHTML = sidebar.classList.contains('collapsed') ? '&gt;' : '&lt;';
+        }
+
+        // Refactored JavaScript for ALL sidebar dropdowns
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownToggles = document.querySelectorAll('.sidebar-dropdown .dropdown-toggle');
+            const dropdownMenus = document.querySelectorAll('.sidebar-dropdown .dropdown-menu');
+
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const targetMenuId = this.id.replace('DropdownToggle', 'SubMenu');
+                    const targetMenu = document.getElementById(targetMenuId);
+
+                    // Close all other menus and deactivate their toggles
+                    dropdownMenus.forEach(menu => {
+                        if (menu !== targetMenu && menu.classList.contains('show')) {
+                            menu.classList.remove('show');
+                            menu.previousElementSibling.classList.remove('active'); // Deactivate its toggle
+                        }
+                    });
+
+                    // Toggle the clicked menu and its toggle's active state
+                    if (targetMenu) {
+                        targetMenu.classList.toggle('show');
+                        this.classList.toggle('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

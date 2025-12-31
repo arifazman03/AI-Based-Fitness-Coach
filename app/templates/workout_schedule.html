@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workout Schedule - AI Fitness Coach</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons (like logout icon) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* CSS copied directly from bmi.html */
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Exo 2', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f8f0; /* Default light green background for the lower part */
+        }
+
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 120px;
+            height: 120px;
+            z-index: 3; /* Ensure logo is above the top background */
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 220px;
+            background-color: #153B47;
+            padding-top: 20px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar a {
+            display: block;
+            color: #f0f0f0;
+            padding: 15px 25px;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            background-color: #1b4f56;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            z-index: 1001;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 20px;
+            left: 25px;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 220px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: margin-left 0.3s ease;
+            position: relative; /* For positioning the top background */
+            padding-top: 180px; /* Adjust padding to accommodate the top image and title banner */
+            box-sizing: border-box;
+        }
+
+        .main-content.full {
+            margin-left: 0;
+        }
+
+        .nav-links {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- CSS for the split background (from bmi.html) --- */
+        .top-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px; /* Match bmi.html height */
+            background: url('{{ url_for('static', filename='ws.jpg') }}'); /* Using bmi.jpg as requested */
+            background-size: 90%; /* Adjust as per bmi.html */
+            background-position: center 260px; /* Adjust as per bmi.html */
+            z-index: 1; /* Below the main content */
+        }
+
+        .bmi-title-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px; /* Match top-background height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2; /* Above the top background */
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: rgba(0, 0, 0, 0.3); /* Optional overlay for better text visibility */
+        }
+
+        /* Re-using bmi-container class for the main workout schedule content area */
+        .bmi-container {
+            z-index: 2; /* Above the background sections */
+            width: 100%;
+            max-width: 900px; /* Increased max-width for the table */
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: left;
+            background-color: transparent; /* Make container transparent to show the light green background */
+            color: #333;
+        }
+
+        /* Original workout_schedule.html table styles (kept for layout) */
+        table {
+            table-layout: fixed;
+            width: 100%; /* Ensure table takes full width of its container */
+        }
+        td, th {
+            width: 14.28%; /* Approximately 100% / 7 days */
+            text-align: center;
+            vertical-align: middle;
+            padding: 8px; /* Add some padding for better appearance */
+        }
+        /* Style for the hr separator */
+        hr {
+            border-top: 1px solid #ccc;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Logo from bmi.html -->
+    <img src="{{ url_for('static', filename='logonew.png') }}" alt="Logo" class="logo">
+
+    <!-- Sidebar Toggle Button from bmi.html -->
+    <button class="toggle-btn" onclick="toggleSidebar()" id="toggle-icon">&gt;</button>
+
+    <!-- Sidebar Navigation from bmi.html -->
+    <div class="sidebar" id="sidebar">
+        <div class="nav-links">
+            <a href="{{ url_for('main.profile') }}">Profile</a>
+            <a href="{{ url_for('main.dashboard') }}">Home</a>
+            <a href="{{ url_for('main.tutorial_initial') }}">Workout Tutorial</a>
+            <a href="{{ url_for('main.trainingintl') }}">Training</a>
+            <a href="{{ url_for('main.bmi') }}">BMI Calculator</a>
+            <a href="{{ url_for('main.workout_schedule') }}">Workout Schedule</a>
+            <a href="{{ url_for('main.chatbot') }}">Chatbot</a>
+            <a href="{{ url_for('main.printl') }}">Progress Records</a>
+        </div>
+        <div class="logout">
+            <a href="{{ url_for('main.logout_confirmation') }}">
+                <i class="fas fa-sign-out-alt"></i> Log Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content Area (structured like bmi.html's main-content) -->
+    <div class="main-content" id="main">
+        <!-- Top Background Image (from bmi.html) -->
+        <div class="top-background"></div>
+        <!-- Title Banner (adapted for Workout Schedule) -->
+        <div class="bmi-title-banner">
+            WORKOUT SCHEDULE
+        </div>
+
+        <!-- Workout Schedule Content (wrapped in bmi-container for consistent styling) -->
+        <div class="bmi-container" style="margin-top: 40px;">
+            <h3 class="mb-5" style="color: black; margin-bottom: 40px; text-align: center;">Your Weekly Workout Plan</h3>
+
+            <!-- Table Display -->
+            <div class="table-responsive"> <!-- Added Bootstrap responsive table class -->
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Monday</th>
+                            <th>Tuesday</th>
+                            <th>Wednesday</th>
+                            <th>Thursday</th>
+                            <th>Friday</th>
+                            <th>Saturday</th>
+                            <th>Sunday</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="monday-cell">{{ schedule['Monday']|join('<hr>')|safe }}</td>
+                            <td id="tuesday-cell">{{ schedule['Tuesday']|join('<hr>')|safe }}</td>
+                            <td id="wednesday-cell">{{ schedule['Wednesday']|join('<hr>')|safe }}</td>
+                            <td id="thursday-cell">{{ schedule['Thursday']|join('<hr>')|safe }}</td>
+                            <td id="friday-cell">{{ schedule['Friday']|join('<hr>')|safe }}</td>
+                            <td id="saturday-cell">{{ schedule['Saturday']|join('<hr>')|safe }}</td>
+                            <td id="sunday-cell">{{ schedule['Sunday']|join('<hr>')|safe }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-3 text-center">
+                <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#addItemModal">Add Item</button>
+                <button id="edit-btn" class="btn btn-warning me-2" onclick="showEditModal()">Edit Item</button>
+                <button id="delete-btn" class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#deleteItemModal">Delete Item</button>
+                <button class="btn btn-secondary" onclick="resetSchedule()">New Schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle (required for modals) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Add Item Modal -->
+    <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="addItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ url_for('main.add_schedule_item') }}">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addItemModalLabel">Add Workout Item</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="day" class="form-label">Day</label>
+                            <select name="day" id="day" class="form-select" required>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="start_time" class="form-label">Start Time</label>
+                            <input type="time" class="form-control" name="start_time" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="end_time" class="form-label">End Time</label>
+                            <input type="time" class="form-control" name="end_time" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Exercise Title</label>
+                            <input type="text" class="form-control" name="title" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Add Item</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Delete Item Modal -->
+    <div class="modal fade" id="deleteItemModal" tabindex="-1" aria-labelledby="deleteItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ url_for('main.delete_schedule_item') }}" onsubmit="return confirmDelete();">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteItemModalLabel">Delete Workout Item</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="item_id" class="form-label">Select Item</label>
+                            <select name="item_id" id="delete-item-select" class="form-select" required>
+                                {% for item in schedule_items %}
+                                    <option value="{{ item.id }}">
+                                        {{ item.day }}: {{ item.start_time.strftime('%H:%M') }} - {{ item.end_time.strftime('%H:%M') }} | {{ item.title }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Item Modal -->
+    <div class="modal fade" id="editItemModal" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <form method="POST" action="{{ url_for('main.edit_schedule_item') }}">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editItemModalLabel">Edit Workout Item</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="item_id" class="form-label">Select Item to Edit</label>
+                            <select name="item_id" id="item_id" class="form-select" required>
+                                {% for item in schedule_items %}
+                                <option value="{{ item.id }}">
+                                    {{ item.day }}: {{ item.start_time.strftime('%H:%M') }} - {{ item.end_time.strftime('%H:%M') }} ({{ item.title }})
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_day" class="form-label">Day</label>
+                            <select name="new_day" class="form-select" required>
+                                {% for day in ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'] %}
+                                <option value="{{ day }}">{{ day }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_start_time" class="form-label">Start Time</label>
+                            <input type="time" class="form-control" name="new_start_time" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_end_time" class="form-label">End Time</label>
+                            <input type="time" class="form-control" name="new_end_time" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new_title" class="form-label">Exercise Title</label>
+                            <input type="text" class="form-control" name="new_title" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-warning">Save Changes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript for sidebar toggle (copied from bmi.html)
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('main');
+            const icon = document.getElementById('toggle-icon');
+            sidebar.classList.toggle('collapsed');
+            main.classList.toggle('full');
+            icon.innerHTML = sidebar.classList.contains('collapsed') ? '&gt;' : '&lt;';
+        }
+
+        // Original workout_schedule.html JavaScript functions
+        function confirmDelete() {
+            // Using confirm() as per your original code, but generally a custom modal is preferred
+            return confirm("Are you sure you want to delete this workout item?");
+        }
+
+        function showEditModal() {
+            const editModal = new bootstrap.Modal(document.getElementById('editItemModal'));
+            editModal.show();
+        }
+
+        function resetSchedule() {
+            // Using confirm() as per your original code, but generally a custom modal is preferred
+            if (confirm("Are you sure you want to reset the entire schedule? This action cannot be undone.")) {
+                fetch("{{ url_for('main.clear_schedule') }}", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "same-origin"
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Clear all table cells in the UI
+                        ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].forEach(day => {
+                            const cell = document.getElementById(day + '-cell');
+                            if (cell) cell.innerHTML = '';
+                        });
+
+                        // Refresh delete and edit modal dropdowns
+                        fetch("{{ url_for('main.get_schedule_items_dropdown') }}")
+                            .then(response => response.json())
+                            .then(items => {
+                                const deleteSelect = document.getElementById('delete-item-select');
+                                const editSelect = document.getElementById('item_id');
+
+                                [deleteSelect, editSelect].forEach(select => {
+                                    if (select) {
+                                        select.innerHTML = ''; // Clear existing options
+
+                                        if (items.length === 0) {
+                                            // Add a disabled option if no items are available
+                                            const option = document.createElement('option');
+                                            option.disabled = true;
+                                            option.selected = true;
+                                            option.textContent = "No items available";
+                                            select.appendChild(option);
+                                        } else {
+                                            // Populate dropdowns with new items
+                                            items.forEach(item => {
+                                                const option = document.createElement('option');
+                                                option.value = item.id;
+                                                option.textContent = `${item.day}: ${item.start_time} - ${item.end_time} | ${item.title}`;
+                                                select.appendChild(option);
+                                            });
+                                        }
+                                    }
+                                });
+
+                                // Disable or enable edit/delete buttons based on item availability
+                                const editBtn = document.getElementById('edit-btn');
+                                const deleteBtn = document.getElementById('delete-btn');
+                                const hasItems = items.length > 0;
+                                if (editBtn && deleteBtn) {
+                                    editBtn.disabled = !hasItems;
+                                    deleteBtn.disabled = !hasItems;
+                                }
+
+                                // Inform the user
+                                alert("Schedule cleared and display refreshed!");
+                            })
+                            .catch(error => {
+                                console.error('Error fetching dropdown items after reset:', error);
+                                alert("Schedule cleared, but there was an error refreshing dropdowns.");
+                            });
+                    } else {
+                        alert("Failed to clear schedule: " + (data.message || "Unknown error."));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error resetting schedule:', error);
+                    alert("An error occurred while trying to reset the schedule.");
+                });
+            }
+        }
+    </script>
+</body>
+</html>

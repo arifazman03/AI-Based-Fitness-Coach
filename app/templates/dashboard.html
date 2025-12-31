@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - AI Fitness Coach</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Exo 2', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('{{ url_for('static', filename='homepage.jpg') }}');
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 120px;
+            height: 120px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 220px;
+            background-color: #153B47;
+            padding-top: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar a {
+            display: block;
+            color: #f0f0f0;
+            padding: 15px 25px;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            background-color: #1b4f56;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            z-index: 1001;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 20px;
+            left: 25px;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 220px;
+            padding: 40px;
+            text-align: center;
+            transition: margin-left 0.3s ease;
+        }
+
+        .main-content.full {
+            margin-left: 0;
+        }
+
+        .card-container {
+            display: grid;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);  
+            gap: 30px;
+            justify-content: center;
+            align-items: center;
+            max-width: 1000px;
+            margin: 40px auto;
+        }
+
+        .dashboard-card {
+            background-color: #D3D3D3 ;
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            color: #1a73e8;
+        }
+
+        .dashboard-card h5 {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .dashboard-card:hover {
+            background-color: #e0e0e0;
+        }
+
+        .lets-workout-btn {
+            margin-top: 20px;
+        }
+        .nav-links {
+    margin-top: 50px;  
+    display: flex;
+    flex-direction: column;
+}
+
+    </style>
+</head>
+<body>
+    <!-- Logo -->
+    <img src="{{ url_for('static', filename='logonew.png') }}" alt="Logo" class="logo">
+
+    <!-- Sidebar Toggle Button -->
+    <button class="toggle-btn" onclick="toggleSidebar()" id="toggle-icon">&gt;</button>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+    <!-- New wrapper for spacing -->
+    <div class="nav-links">
+        <a href="{{ url_for('main.profile') }}">Profile</a>
+        <a href="{{ url_for('main.dashboard') }}">Home</a>
+        <a href="{{ url_for('main.tutorial_initial') }}">Workout Tutorial</a>
+        <a href="{{ url_for('main.trainingintl') }}">Training</a>
+        <a href="{{ url_for('main.bmi') }}">BMI Calculator</a>
+        <a href="{{ url_for('main.workout_schedule') }}">Workout Schedule</a>
+        <a href="{{ url_for('main.chatbot') }}">Chatbot</a>
+        <a href="{{ url_for('main.printl') }}">Progress Records</a>
+    </div>
+    
+    <div class="logout">
+        <a href="{{ url_for('main.logout_confirmation') }}">
+            <i class="fas fa-sign-out-alt"></i> Log Out
+        </a>
+    </div>
+</div>
+
+
+    <!-- Main Content -->
+    <div class="main-content" id="main">
+        <h1>AI - BASED FITNESS COACH</h1>
+        <p>Train Smarter, Not Harder. Train Anywhere, Everywhere</p>
+        <a href="{{ url_for('main.trainingintl') }}" class="btn btn-primary lets-workout-btn">Let's Workout</a>
+
+        <div class="card-container">
+            <div class="dashboard-card">
+                <h5>WORKOUT TUTORIAL</h5>
+                <p>🖐️ Master the moves with guided workout videos to help you train safely and effectively.</p>
+            </div>
+            <div class="dashboard-card" onclick="location.href='{{ url_for('main.trainingintl') }}'">
+                <h5>WORKOUT TRAINING</h5>
+                <p>📷 Let your webcam detect exercises, count reps, and track your progress with AI-powered accuracy.</p>
+            </div>
+            <div class="dashboard-card" onclick="location.href='{{ url_for('main.bmi') }}'">
+                <h5>BMI CALCULATOR</h5>
+                <p>🧮 Quickly calculate your Body Mass Index and understand your fitness level in seconds.</p>
+            </div>
+            <div class="dashboard-card" onclick="location.href='{{ url_for('main.workout_schedule') }}'">
+                <h5>WORKOUT SCHEDULE</h5>
+                <p>📝 Plan and organize your weekly workouts to stay consistent and achieve your goals.</p>
+            </div>
+            <div class="dashboard-card">
+                <h5>CHATBOT</h5>
+                <p>💬 Ask fitness questions anytime and get instant guidance from your virtual coach.</p>
+            </div>
+            <div class="dashboard-card" onclick="location.href='{{ url_for('main.printl') }}'">
+                <h5>PROGRESS RECORDS</h5>
+                <p>📊 Track your journey anytime and review past performance insights and BMI records with your Progress Records.</p>
+            </div>
+        </div>
+    </div>
+<!-- Custom Schedule Reminder Modal -->
+<div class="modal fade" id="scheduleReminderModal" tabindex="-1" aria-labelledby="scheduleReminderLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content text-dark">
+      <div class="modal-header">
+        <h5 class="modal-title" id="scheduleReminderLabel">Workout Reminder</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        You have an item(s) in your workout schedule for today. Don’t forget to check!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">OK</button>
+        <a href="{{ url_for('main.workout_schedule') }}" class="btn btn-primary">Go to Workout Schedule</a>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('main');
+            const icon = document.getElementById('toggle-icon');
+            sidebar.classList.toggle('collapsed');
+            main.classList.toggle('full');
+            icon.innerHTML = sidebar.classList.contains('collapsed') ? '&gt;' : '&lt;';
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+        fetch("{{ url_for('main.check_today_schedule') }}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.has_schedule) {
+                    const reminderModal = new bootstrap.Modal(document.getElementById('scheduleReminderModal'));
+                    reminderModal.show();
+                }
+            });
+    });
+    </script>
+</body>
+</html>

@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BMI Calculator - AI Fitness Coach</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Exo 2', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0f8f0; /* Default light green background for the lower part */
+        }
+
+        .logo {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 120px;
+            height: 120px;
+            z-index: 3; /* Ensure logo is above the top background */
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 220px;
+            background-color: #153B47;
+            padding-top: 20px;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .sidebar a {
+            display: block;
+            color: #f0f0f0;
+            padding: 15px 25px;
+            text-decoration: none;
+        }
+
+        .sidebar a:hover {
+            background-color: #1b4f56;
+        }
+
+        .toggle-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: none;
+            color: white;
+            border: none;
+            font-size: 1.5rem;
+            z-index: 1001;
+        }
+
+        .logout {
+            position: absolute;
+            bottom: 20px;
+            left: 25px;
+            color: white;
+        }
+
+        .main-content {
+            margin-left: 220px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: margin-left 0.3s ease;
+            position: relative; /* For positioning the top background */
+            padding-top: 150px; /* Adjust padding to accommodate the top image and title */
+            box-sizing: border-box;
+        }
+
+        .main-content.full {
+            margin-left: 0;
+        }
+
+        .nav-links {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* --- New CSS for the split background --- */
+        .top-background {
+             position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px; /* Adjust height as needed for the top image area */
+            background: url('{{ url_for('static', filename='bmi.jpg') }}');
+            background-size: 75%;
+            background-position: center 260px;
+         
+            z-index: 1; /* Below the main content */
+        }
+
+        .bmi-title-banner {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 180px; /* Match top-background height */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2; /* Above the top background */
+            color: white;
+            font-size: 2.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: rgba(0, 0, 0, 0.3); /* Optional overlay for better text visibility */
+        }
+
+        .bmi-container {
+            z-index: 2; /* Above the background sections */
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            box-sizing: border-box;
+            text-align: left;
+            background-color: transparent; /* Make container transparent to show the light green background */
+            color: #333;
+        }
+
+        .bmi-form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .bmi-form-group label {
+            font-weight: bold;
+            color: #444;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .bmi-form-group .form-control {
+            background-color: #D3D3D3;
+            border: 1px solid #ccc;
+            padding: 10px 12px;
+            font-size: 1rem;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .calculate-btn {
+            background-color: #00FF00;
+            color: black;
+            border: none;
+            padding: 10px 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .calculate-btn:hover {
+            background-color: #00E600;
+        }
+
+        .bmi-result-display {
+            margin-top: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #333;
+            text-align: center;
+        }
+
+        .bmi-result-display strong {
+            color: #000;
+        }
+    </style>
+</head>
+<body>
+    <img src="{{ url_for('static', filename='logonew.png') }}" alt="Logo" class="logo">
+
+    <button class="toggle-btn" onclick="toggleSidebar()" id="toggle-icon">&gt;</button>
+
+    <div class="sidebar" id="sidebar">
+        <div class="nav-links">
+            <a href="{{ url_for('main.profile') }}">Profile</a>
+            <a href="{{ url_for('main.dashboard') }}">Home</a>
+            <a href="{{ url_for('main.tutorial_initial') }}">Workout Tutorial</a>
+            <a href="{{ url_for('main.trainingintl') }}">Training</a>
+            <a href="{{ url_for('main.bmi') }}">BMI Calculator</a>
+            <a href="{{ url_for('main.workout_schedule') }}">Workout Schedule</a>
+            <a href="{{ url_for('main.chatbot') }}">Chatbot</a>
+            <a href="{{ url_for('main.progress') }}">Progress Records</a>
+        </div>
+        <div class="logout">
+            <a href="{{ url_for('main.logout_confirmation') }}">
+                <i class="fas fa-sign-out-alt"></i> Log Out
+            </a>
+        </div>
+    </div>
+
+    <div class="main-content" id="main">
+        <div class="top-background"></div>
+        <div class="bmi-title-banner">
+            BMI CALCULATOR
+        </div>
+
+        <div class="bmi-container" style="margin-top: 40px" >  <!-- added spacing -->
+    <h3 class="mb-5" style="color: #333; margin-bottom: 40px;">Body Mass Index (BMI) Calculator</h3>
+
+    <form method="POST">
+        {{ form.hidden_tag() }}
+        <div class="bmi-form-group">
+            <label for="weight_kg">Weight (kg)</label>
+            <input type="number" id="weight_kg" name="weight_kg" class="form-control" placeholder="Value" required step="0.01" min="0.01">
+        </div>
+        <div class="bmi-form-group">
+            <label for="height_cm">Height (cm)</label>
+            <input type="number" id="height_cm" name="height_cm" class="form-control" placeholder="Value" required step="0.01" min="0.01">
+        </div>
+        <div class="text-center">
+            <button type="submit" class="calculate-btn">Calculate</button>
+        </div>
+    </form>
+
+    {% if bmi_result %}
+        <div class="bmi-result-display">
+            <strong>BMI:</strong> {{ bmi_result }}<br>
+            <strong>BMI Category:</strong> {{ bmi_category }}
+        </div>
+    {% endif %}
+</div>
+
+    </div>
+
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const main = document.getElementById('main');
+            const icon = document.getElementById('toggle-icon');
+            sidebar.classList.toggle('collapsed');
+            main.classList.toggle('full');
+            icon.innerHTML = sidebar.classList.contains('collapsed') ? '&gt;' : '&lt;';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const heightInput = document.getElementById('height_cm');
+            const weightInput = document.getElementById('weight_kg');
+
+            if (heightInput.value === '') {
+                heightInput.placeholder = 'Value';
+            }
+            if (weightInput.value === '') {
+                weightInput.placeholder = 'Value';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Survey - AI Fitness Coach</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Exo 2', Tahoma, Geneva, Verdana, sans-serif;
+            background: url('{{ url_for('static', filename='homepage.jpg') }}');
+            background-size: cover;
+            background-position: 140px center;
+            color: white;
+            overflow: hidden; 
+        }
+
+        .logo {
+            position: absolute;
+            top: 1px;
+            right: 1px;
+            width: 160px;
+            height: 160px;
+        }
+
+        .title-section {
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .title-section h1 {
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            margin-top: 10px;
+            color: white;
+        }
+
+        .survey-card-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 25px 30px; 
+            border-radius: 20px;
+            background: #D3D3D3; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: black;
+            position: relative;
+            min-height: 450px; 
+            overflow: hidden; 
+        }
+        
+        .card-title {
+            color: black;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+
+        .survey-form-wrapper {
+            display: flex;
+            width: 500%; 
+            transition: transform 0.5s ease-in-out; 
+        }
+
+        .survey-step {
+            width: 100%; 
+            flex-shrink: 0; 
+            padding-bottom: 70px; 
+            box-sizing: border-box;
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .form-check {
+            margin-bottom: 10px;
+            display: flex; 
+            align-items: flex-start; 
+        }
+
+        .form-check-input {
+            margin-top: 0.5rem; 
+            margin-right: 15px; 
+            flex-shrink: 0; 
+        }
+        
+        .form-check-input:checked {
+            background-color: #418bdb;
+            border-color: #418bdb;
+        }
+
+        .form-check-label {
+            color: black;
+            cursor: pointer;
+            padding: 8px 0; 
+            border-radius: 0; 
+            transition: none; 
+            width: 100%;
+            border: none; 
+            border-bottom: 1px solid #ccc;
+            /* Ensure text wraps even if <br> isn't perfect */
+            white-space: normal; 
+        }
+        
+        .form-check-input:checked + .form-check-label {
+             font-weight: normal; 
+        }
+
+        .button-group {
+            position: absolute;
+            bottom: 20px;
+            left: 30px; 
+            right: 30px; 
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-survey {
+            background-color: #418bdb;
+            color: black;
+            font-weight: bold;
+            width: auto;
+            padding: 8px 30px;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-survey:hover {
+            background-color: #357bd8;
+        }
+
+        .btn-back-hidden {
+            visibility: hidden;
+        }
+
+    </style>
+</head>
+<body>
+
+    <img src="{{ url_for('static', filename='logonew.png') }}" class="logo" alt="Logo">
+
+    <div class="title-section">
+        <h1>AI - BASED FITNESS COACH</h1>
+    </div>
+
+    <div class="survey-card-container">
+
+        <h3 class="text-center card-title">FITNESS PROFILE SURVEY</h3>
+
+        <form method="POST" id="surveyForm">
+            <div class="survey-form-wrapper" id="surveyFormWrapper">
+                
+                <div class="survey-step" data-step="1">
+                    <p class="question-text">1. How would you describe your current fitness level?</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q1_fitness_level" id="levelA" value="A" required>
+                        <label class="form-check-label" for="levelA">A. Never or Rarely Exercised</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q1_fitness_level" id="levelB" value="B">
+                        <label class="form-check-label" for="levelB">B. Beginner (1-2 times a week)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q1_fitness_level" id="levelC" value="C">
+                        <label class="form-check-label" for="levelC">C. Intermediate (2-3 times a week)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q1_fitness_level" id="levelD" value="D">
+                        <label class="form-check-label" for="levelD">D. Advanced (More than 3 times a week)</label>
+                    </div>
+                </div>
+
+                <div class="survey-step" data-step="2">
+                    <p class="question-text">2. What is your primary fitness goal?</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q2_fitness_goal" id="goalA" value="A" required>
+                        <label class="form-check-label" for="goalA">A. Increase Max Strength</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q2_fitness_goal" id="goalB" value="B">
+                        <label class="form-check-label" for="goalB">B. Build and Tone Muscle</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q2_fitness_goal" id="goalC" value="C">
+                        <label class="form-check-label" for="goalC">C. Lose Body Fat</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q2_fitness_goal" id="goalD" value="D">
+                        <label class="form-check-label" for="goalD">D. Improve General Endurance & Energy</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q2_fitness_goal" id="goalE" value="E">
+                        <label class="form-check-label" for="goalE">E. Learn Proper Technique and Form</label>
+                    </div>
+                </div>
+
+                <div class="survey-step" data-step="3">
+                    <p class="question-text">3. In what timeframe do you realistically hope to achieve <br> this goal?</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q3_timeframe" id="timeA" value="A" required>
+                        <label class="form-check-label" for="timeA">A. Very Short Term (4-8 Weeks)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q3_timeframe" id="timeB" value="B">
+                        <label class="form-check-label" for="timeB">B. Short Term (2-3 Months)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q3_timeframe" id="timeC" value="C">
+                        <label class="form-check-label" for="timeC">C. Mid Term (4-6 Months)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q3_timeframe" id="timeD" value="D">
+                        <label class="form-check-label" for="timeD">D. Long Term (6-12+ Months)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q3_timeframe" id="timeE" value="E">
+                        <label class="form-check-label" for="timeE">E. Ongoing Lifestyle Change</label>
+                    </div>
+                </div>
+
+                <div class="survey-step" data-step="4">
+                    <p class="question-text">4. What time of day do you prefer to work out?</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q4_workout_time" id="time_dayA" value="A" required>
+                        <label class="form-check-label" for="time_dayA">A. Early Morning (Before 9 AM)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q4_workout_time" id="time_dayB" value="B">
+                        <label class="form-check-label" for="time_dayB">B. Mid-Day (9 AM to 2 PM)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q4_workout_time" id="time_dayC" value="C">
+                        <label class="form-check-label" for="time_dayC">C. Late Afternoon or Evening (2 PM to 7 PM)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q4_workout_time" id="time_dayD" value="D">
+                        <label class="form-check-label" for="time_dayD">D. Night (After 7 PM)</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q4_workout_time" id="time_dayE" value="E">
+                        <label class="form-check-label" for="time_dayE">E. Anytime or Flexible</label>
+                    </div>
+                </div>
+
+                <div class="survey-step" data-step="5">
+                    <p class="question-text">5. Which type of Workout Split do you prefer?</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q5_workout_split" id="splitA" value="A" required>
+                        <label class="form-check-label" for="splitA">A. Push / Pull / Legs (PPL) Split: I prefer to train three different muscle <br> groups on separate days for maximum intensity.</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q5_workout_split" id="splitB" value="B">
+                        <label class="form-check-label" for="splitB">B. Full Body Split: I prefer to hit every major muscle group <br> (Squat/Press/Curl) in every single workout.</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q5_workout_split" id="splitC" value="C">
+                        <label class="form-check-label" for="splitC">C. Upper / Lower Split: I like to alternate between dedicated upper-body <br> days and dedicated lower-body days.</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="q5_workout_split" id="splitD" value="D">
+                        <label class="form-check-label" for="splitD">D. Body Part Split (e.g., Arms Day, Legs Day): I prefer isolating specific <br> muscles on their own day.</label>
+                    </div>
+                    <br>
+                    <p class="text-center" style="font-style: italic; font-size: 0.9rem;">You have reached the end of the survey.</p>
+                </div>
+
+            </div>
+            
+            <div class="button-group">
+                <button type="button" class="btn btn-survey btn-back-hidden" id="backButton">Back</button>
+                <button type="button" class="btn btn-survey" id="nextButton">Next</button>
+            </div>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const wrapper = document.getElementById('surveyFormWrapper');
+            const nextButton = document.getElementById('nextButton');
+            const backButton = document.getElementById('backButton');
+            const steps = document.querySelectorAll('.survey-step');
+            const totalSteps = steps.length;
+            let currentStep = 1;
+
+            // function to check if a radio button is selected in the current step
+            function isCurrentStepValid() {
+                const currentStepElement = document.querySelector(`[data-step="${currentStep}"]`);
+                const radioInputs = currentStepElement.querySelectorAll('input[type="radio"]');
+                let isValid = false;
+                radioInputs.forEach(input => {
+                    if (input.checked) {
+                        isValid = true;
+                    }
+                });
+                return isValid;
+            }
+
+            // function to update the view (slide the wrapper)
+            function updateStepView(direction) {
+                const transformValue = (currentStep - 1) * -100;
+                wrapper.style.transform = `translateX(${transformValue}%)`;
+
+                // Update Button Visibility and Text
+                backButton.classList.toggle('btn-back-hidden', currentStep === 1);
+                
+                if (currentStep === totalSteps) {
+                    nextButton.textContent = 'Submit';
+                    nextButton.type = 'button'; 
+                } else {
+                    nextButton.textContent = 'Next';
+                    nextButton.type = 'button'; 
+                }
+            }
+
+            // handle the Next button click
+            nextButton.addEventListener('click', function() {
+                if (isCurrentStepValid()) {
+                    if (currentStep < totalSteps) {
+                        currentStep++;
+                        updateStepView('next');
+                    } else if (currentStep === totalSteps) {
+                        // last step and click Submit
+                        document.getElementById('surveyForm').submit();
+                    }
+                } else {
+                    // display simple alert if no option is selected
+                    alert("Please select an option before proceeding.");
+                }
+            });
+
+            // handle the Back button click
+            backButton.addEventListener('click', function() {
+                if (currentStep > 1) {
+                    currentStep--;
+                    updateStepView('back');
+                }
+            });
+
+            updateStepView();
+        });
+    </script>
+</body>
+</html>
