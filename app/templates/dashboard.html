@@ -164,7 +164,7 @@
         <a href="{{ url_for('main.trainingintl') }}" class="btn btn-primary lets-workout-btn">Let's Workout</a>
 
         <div class="card-container">
-            <div class="dashboard-card">
+            <div class="dashboard-card" onclick="location.href='{{ url_for('main.tutorial_initial') }}'">
                 <h5>WORKOUT TUTORIAL</h5>
                 <p>🖐️ Master the moves with guided workout videos to help you train safely and effectively.</p>
             </div>
@@ -180,7 +180,7 @@
                 <h5>WORKOUT SCHEDULE</h5>
                 <p>📝 Plan and organize your weekly workouts to stay consistent and achieve your goals.</p>
             </div>
-            <div class="dashboard-card">
+            <div class="dashboard-card" onclick="location.href='{{ url_for('main.chatbot') }}'">
                 <h5>CHATBOT</h5>
                 <p>💬 Ask fitness questions anytime and get instant guidance from your virtual coach.</p>
             </div>
